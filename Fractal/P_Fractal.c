@@ -7,8 +7,8 @@
 #include <omp.h>
 #include <time.h>
 
-#include "..\include\Functions.c"
-#include "..\include\pcg_basic.h"
+#include "../include/Functions.c"
+#include "../include/pcg-c-basic-0.9/pcg_basic.h"
 
 int main(int argc, char** argv)
 {

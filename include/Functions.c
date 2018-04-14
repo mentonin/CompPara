@@ -7,7 +7,7 @@
 #include <omp.h>
 #include <time.h>
 
-#include "pcg_basic.h"
+#include "pcg-c-basic-0.9/pcg_basic.h"
 
 // retorna um valor de um vetor de probabilidades inteiras
 int weigthRand(pcg32_random_t* rng, int* weights, int arraySize)
