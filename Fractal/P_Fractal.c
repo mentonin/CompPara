@@ -104,6 +104,6 @@ int main(int argc, char** argv)
         printf("Thread #%d ended (%lf s)\n", tnum, (double)(end - begin) / CLOCKS_PER_SEC);
     }
 #pragma omp barrier
-    printMapa("P_Fractal.pgm", Mapa, hPixels, wPixels);
+    printMapa("P_Fractal.out.pgm", Mapa, hPixels, wPixels);
     return 0;
 }

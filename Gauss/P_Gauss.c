@@ -53,6 +53,6 @@ int main(int argc, char** argv)
     }
 
     // Imprime o vetor de frequencias em P_dados.csv
-    freqPrint("P_dados.csv", termos * n + 1, gauss);
+    freqPrint("P_dados.out.csv", termos * n + 1, gauss);
     return 0;
 }
