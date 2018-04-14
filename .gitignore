@@ -1,7 +1,14 @@
+# Executaveis
+*.exe
+
+# Imagens
 *.pgm
 *.png
-*.exe
+
+# Documentos
 *.pdf
 *.xlsx
 *.csv
+
+# Arquivos marcados para serem ignorados
 *.out*
