@@ -1,10 +1,10 @@
-#include <complex.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <complex.h>
 #include <omp.h>
 #include <time.h>
 
@@ -61,13 +61,15 @@ int main(int argc, char** argv)
     unsigned char* Mapa;
     Mapa = calloc(bound, sizeof(char));
 
-    // Inicia a parte paralela do codigo
+// Inicia a parte paralela do codigo
+#pragma omp parallel num_threads(totalThreads)
     {
         int tnum = omp_get_thread_num();
-        printf("thread #%d started\n", tnum);
+        printf("thread #%2d started\n", tnum);
         // Estas variaveis sao privadas a cada threads
         unsigned int local, iter;
         // Testa todos os pontos distribuido entre as threads do time
+#pragma omp for
         for (local = 0; local < bound; local++) {
             unsigned int posicao[2];
             double complex number;
@@ -78,13 +80,13 @@ int main(int argc, char** argv)
                 z = z * z + number; // Calcula novo valor
                 if (cabs(z) > 2) { // Testa a condicao de fronteira
                     // Atualiza o mapa
-                    Mapa[local] = iter * 255 / zTimeout;
+                    Mapa[local] = ((double)iter * 255.0 / (double)zTimeout);
                     // Sai do loop
                     break;
                 }
             }
-            printf("%lf porcento\n", (double)local / bound * 100);
         }
+        printf("#%2d ended\n", tnum);
     }
 
     // Registra o mapa final

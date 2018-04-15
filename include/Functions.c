@@ -27,13 +27,16 @@ void freqPrint(const char* filename, int vecSize, int* vec)
     fclose(dados);
 }
 
-void printMapa(char* nomeArquivo, unsigned char* mapa, int height, int width)
+void printMapa(char* nomeArquivo, unsigned char* mapa, unsigned int height, unsigned int width)
 {
     FILE* arquivo = fopen(nomeArquivo, "w");
     fprintf(arquivo, "P5 %d %d 255\n", width, height);
-
-    fwrite(mapa, 1, height * width, arquivo);
-
+    for (unsigned int h = height; h > 0; h--) {
+        for (unsigned int w = 0; w < width; w++) {
+            fwrite((mapa + (h - 1) * width + w), sizeof(char), 1, arquivo);
+        }
+        // fprintf(arquivo, "\n");
+    }
     fclose(arquivo);
 }
 
@@ -44,7 +47,7 @@ void locToPos(unsigned int loc, unsigned int w, unsigned int* pos)
 }
 void posToLoc(unsigned int* pos, unsigned int w, unsigned int* loc)
 {
-    if (pos[0] >= w){
+    if (pos[0] >= w) {
         printf("ERR: fora da fronteira");
         exit(-1);
     }
