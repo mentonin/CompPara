@@ -10,6 +10,14 @@
 #include "../include/Functions.c"
 #include "../include/pcg-c-basic-0.9/pcg_basic.h"
 
+/* 
+a.out <int h> <int w> <float perc> <int totalThreads>
+
+h = altura da grid
+w = largura da grid
+perc = porcentual da grid que será ocupada
+totalThreads = numero de threads no time
+ */
 int main(int argc, char** argv)
 {
     // Checa os argumentos passados pela linha de comando
@@ -19,7 +27,7 @@ int main(int argc, char** argv)
     }
     unsigned int hPixels = (unsigned int)atoi(argv[1]);
     unsigned int wPixels = (unsigned int)atoi(argv[2]);
-    unsigned int iter = (unsigned int)atoi(argv[3]);
+    double perc = atof(argv[3]);
     unsigned int totalThreads;
     if (argc == 5) {
         totalThreads = (unsigned int)atoi(argv[4]);
@@ -27,6 +35,7 @@ int main(int argc, char** argv)
         totalThreads = omp_get_max_threads();
     }
     unsigned int bound = (hPixels * wPixels);
+    unsigned int iter = bound * perc;
 
     // Inicializa o mapa
     unsigned char* Mapa;
@@ -37,21 +46,20 @@ int main(int argc, char** argv)
         (intptr_t)&argc);
     Mapa[pcg32_boundedrand(bound)] = 1;
 
-    // Imprime o mapa inicial
-    // printMapa(Mapa, hPixels, wPixels);
-
-// Inicia o loop da fractal dividido
+// Inicia a secao paralela do codigo com um time de totalThreads threads
 #pragma omp parallel num_threads(totalThreads)
     {
-        int tnum = omp_get_thread_num();
-        printf("Thread #%d started\n", tnum);
-        clock_t begin = clock();
+        // Estas variaveis sao privadas a cada thread
+        int tnum = omp_get_thread_num(); // numero da thread
         unsigned int local, direcao, novolocal, encontro, i;
+
+        // Cria e inicia a seed do RNG de cada thread
         pcg32_random_t localRNG;
         pcg32_srandom_r(&localRNG,
             time(NULL) ^ ((intptr_t)&argc + tnum),
             (intptr_t)&tnum);
 
+// Divide o for por todas as threads do time
 #pragma omp for
         for (i = 0; i < iter; i++) {
             // Sorteia um local inicial
@@ -59,27 +67,26 @@ int main(int argc, char** argv)
                 local = pcg32_boundedrand_r(&localRNG, bound);
             } while (Mapa[local] != 0); // Garante que é um local desocupado
 
-            encontro = 0;
-            while (!encontro) {
+            while (true) {
                 // Sorteia uma direcao e calcula o novo local
-                novolocal = -1;
-                while (novolocal >= bound) {
+                novolocal = -1; // overflow unsigned
+                while (novolocal >= bound) { // garante que o novo local está dentro das fronteiras
                     direcao = pcg32_boundedrand_r(&localRNG, 4); // 0:E, 1:N, 2:W, 3:S
                     switch (direcao) {
-                    case 0:
+                    case 0: // Leste
                         if ((local + 1) % wPixels != 0) {
                             novolocal = local + 1;
                         }
                         break;
-                    case 1:
+                    case 1: // Norte
                         novolocal = local - wPixels;
                         break;
-                    case 2:
+                    case 2: // Oeste
                         if (local % wPixels != 0) {
                             novolocal = local - 1;
                         }
                         break;
-                    case 3:
+                    case 3: //Sul
                         novolocal = local + wPixels;
                         break;
                     default:
@@ -89,21 +96,18 @@ int main(int argc, char** argv)
                 }
 
                 // Checa o novo local
-                if (Mapa[novolocal]) {
-                    // Se ocupada, sai do loop
+                if (Mapa[novolocal]) { // Se ocupado, sai do loop
                     break;
                 } else {
-                    // Se vazia, muda a posicao e volta para o sorteio de direcao}
+                    // Se vazio, atualiza a posicao e continua no loop
                     local = novolocal;
                 }
             }
-#pragma omp atomic
+#pragma omp atomic // Evita a atualização simultanea da variavel global
             Mapa[local]--; // overflow de 0x00 para 0xFF
         }
-        clock_t end = clock();
-        printf("Thread #%d ended (%lf s)\n", tnum, (double)(end - begin) / CLOCKS_PER_SEC);
     }
-#pragma omp barrier
+    // Grava o mapa final em um arquivo
     printMapa("P_Fractal.out.pgm", Mapa, hPixels, wPixels);
     return 0;
 }
