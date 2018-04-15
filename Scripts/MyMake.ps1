@@ -13,7 +13,7 @@ function MyMake([string]$name, $flag) {
         "..\include\pcg-c-basic-0.9\pcg_basic.o",
         "-o",
         $( -join ($name, ".exe")),
-        "-O3"
+        "-g"
     )
     # Write-Host "gcc" $gccFlags $flag
     & "gcc" $gccFlags $flag
