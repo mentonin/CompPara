@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     {
         // Estas variaveis sao privadas a cada thread
         int tnum = omp_get_thread_num(); // numero da thread
-        unsigned int local, direcao, novolocal, encontro, i;
+        unsigned int local, direcao, novolocal, i;
 
         // Cria e inicia a seed do RNG de cada thread
         pcg32_random_t localRNG;
