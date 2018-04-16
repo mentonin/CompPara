@@ -11,27 +11,6 @@
 #include "../include/Functions.c"
 #include "../include/pcg-c-basic-0.9/pcg_basic.h"
 
-void xposToX(unsigned int* pos, double* x,
-    double x0, double size, unsigned int Res)
-{
-    *x = (((double)(*pos) / (double)Res)) * size + x0;
-}
-
-void posToXY(unsigned int* pos, double* xy,
-    double x0, double y0, double size, unsigned int Res)
-{
-    xposToX(pos, xy, x0, size, Res);
-    xposToX((pos + 1), (xy + 1), y0, size, Res);
-}
-
-void posToZ(unsigned int* pos, double complex* Z,
-    double x0, double y0, double size, unsigned int Res)
-{
-    double xy[2];
-    posToXY(pos, xy, x0, y0, size, Res);
-    *Z = *xy + *(xy + 1) * I;
-}
-
 /* 
 a.out <double x0> <double y0> <double size> <int res> <int zTimeout> <int totalThreads>
 
@@ -61,17 +40,14 @@ int main(int argc, char** argv)
     unsigned char* Mapa;
     Mapa = calloc(bound, sizeof(char));
 
-// Inicia a parte paralela do codigo
-#pragma omp parallel num_threads(totalThreads)
+    // Inicia a parte paralela do codigo
     {
         int tnum = omp_get_thread_num();
         printf("thread #%2d started\n", tnum);
         // Estas variaveis sao privadas a cada threads
-        unsigned int local, iter;
+        unsigned int local, iter, posicao[2];
         // Testa todos os pontos distribuido entre as threads do time
-#pragma omp for
         for (local = 0; local < bound; local++) {
-            unsigned int posicao[2];
             double complex number;
             double complex z = 0;
             locToPos(local, res, posicao);
@@ -80,7 +56,7 @@ int main(int argc, char** argv)
                 z = z * z + number; // Calcula novo valor
                 if (cabs(z) > 2) { // Testa a condicao de fronteira
                     // Atualiza o mapa
-                    Mapa[local] = ((double)iter * 255.0 / (double)zTimeout);
+                    Mapa[local] = (unsigned char)((double)iter * 255.0 / (double)zTimeout);
                     // Sai do loop
                     break;
                 }
@@ -90,5 +66,5 @@ int main(int argc, char** argv)
     }
 
     // Registra o mapa final
-    printMapa("Mandelbrot.out.pgm", Mapa, res, res);
+    printMapa("in.exe", Mapa, res, res);
 }

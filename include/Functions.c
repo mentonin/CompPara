@@ -1,9 +1,11 @@
-#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <assert.h>
+#include <math.h>
 
 #include <omp.h>
 #include <time.h>
@@ -27,16 +29,17 @@ void freqPrint(const char* filename, int vecSize, int* vec)
     fclose(dados);
 }
 
-void printMapa(char* nomeArquivo, unsigned char* mapa, unsigned int height, unsigned int width)
+void printMapa(char* nomeArquivo, unsigned char* mapa,
+    unsigned int height, unsigned int width)
 {
     FILE* arquivo = fopen(nomeArquivo, "w");
-    fprintf(arquivo, "P5 %d %d 255\n", width, height);
+    fprintf(arquivo, "P5 %6d %6d 255 ", width, height);
     for (unsigned int h = height; h > 0; h--) {
         for (unsigned int w = 0; w < width; w++) {
             fwrite((mapa + (h - 1) * width + w), sizeof(char), 1, arquivo);
         }
-        // fprintf(arquivo, "\n");
     }
+    // fwrite(mapa, sizeof(unsigned char), height*width-1, arquivo);
     fclose(arquivo);
 }
 
@@ -52,4 +55,25 @@ void posToLoc(unsigned int* pos, unsigned int w, unsigned int* loc)
         exit(-1);
     }
     *loc = pos[0] + w * pos[1];
+}
+
+void xposToX(unsigned int* pos, double* x,
+    double x0, double size, unsigned int Res)
+{
+    *x = ((double)(*pos) / (Res - 1)) * size + x0;
+}
+
+void posToXY(unsigned int* pos, double* xy,
+    double x0, double y0, double size, unsigned int Res)
+{
+    xposToX(pos, xy, x0, size, Res);
+    xposToX((pos + 1), (xy + 1), y0, size, Res);
+}
+
+void posToZ(unsigned int* pos, double complex* Z,
+    double x0, double y0, double size, unsigned int Res)
+{
+    double xy[2];
+    posToXY(pos, xy, x0, y0, size, Res);
+    *Z = (*xy) + (*(xy + 1)) * I;
 }
