@@ -35,7 +35,8 @@ int main(int argc, char** argv)
     pcg32_srandom(
         time(NULL) ^ (intptr_t)&printf,
         (intptr_t)&argc);
-    Mapa[pcg32_boundedrand(bound)] = 1;
+    // Mapa[pcg32_boundedrand(bound)] = 1;
+    Mapa[bound/2] = 255;
 
     // Imprime o mapa inicial
     // printMapa(Mapa, hPixels, wPixels);
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
         clock_t end = clock();
         printf("Thread #%d ended (%lf s)\n", tnum, (double)(end - begin) / CLOCKS_PER_SEC);
     }
-#pragma omp barrier
+    free(Mapa);
     printMapa("P_Fractal.out.pgm", Mapa, hPixels, wPixels);
     return 0;
 }

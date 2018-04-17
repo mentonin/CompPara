@@ -40,13 +40,15 @@ int main(int argc, char** argv)
     unsigned char* Mapa;
     Mapa = calloc(bound, sizeof(char));
 
-    // Inicia a parte paralela do codigo
+// Inicia a parte paralela do codigo
+#pragma omp parallel num_threads(totalThreads)
     {
         int tnum = omp_get_thread_num();
         printf("thread #%2d started\n", tnum);
         // Estas variaveis sao privadas a cada threads
         unsigned int local, iter, posicao[2];
-        // Testa todos os pontos distribuido entre as threads do time
+// Testa todos os pontos distribuido entre as threads do time
+#pragma omp for
         for (local = 0; local < bound; local++) {
             double complex number;
             double complex z = 0;
@@ -66,5 +68,7 @@ int main(int argc, char** argv)
     }
 
     // Registra o mapa final
-    printMapa("in.exe", Mapa, res, res);
+    char filename[50];
+    sprintf(filename, "Mandelbrot_%04X_%02X_%02X.out.pgm", res, zTimeout, totalThreads);
+    printMapa(filename, Mapa, res, res);
 }

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <assert.h>
+#include <complex.h>
 #include <math.h>
 
 #include <omp.h>
@@ -75,5 +76,5 @@ void posToZ(unsigned int* pos, double complex* Z,
 {
     double xy[2];
     posToXY(pos, xy, x0, y0, size, Res);
-    *Z = (*xy) + (*(xy + 1)) * I;
+    *Z = (*xy) + ((*(xy + 1)) * I);
 }
